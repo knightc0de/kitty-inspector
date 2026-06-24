@@ -1,0 +1,70 @@
+from pathlib import Path
+import magic
+
+DEFAULT_RESULTS = {
+    "file_type": "Unknown",
+    "mime_type": "Unknown",
+    "architecture": "Unknown",
+    "language": "Unknown",
+    "executable": False,
+}
+
+FILE_TYPES = {
+    ".py": "Python Script",
+    ".c": "C Source File",
+    ".cpp": "C++ Source File",
+    ".cc": "C++ Source File",
+    ".cxx": "C++ Source File",
+    ".js": "JavaScript File",
+    ".java": "Java Source File",
+    ".php": "PHP Script",
+    ".html": "HTML Document",
+    ".htm": "HTML Document",
+    ".sh": "Shell Script",
+    ".bash": "Shell Script",
+    ".zsh": "Shell Script",
+    ".go": "Go Source File",
+    ".rs": "Rust Source File",
+}
+
+
+class KittyInvestigator:
+    def __init__(self, path):
+        self.path = Path(path)
+        self.results = DEFAULT_RESULTS.copy()
+
+    def file_type(self):
+        if not self.path.exists():
+            self.results["file_type"] = "File Not Found"
+            return self.results
+
+        try:
+            # MIME type
+            mime = magic.Magic(mime=True)
+            self.results["mime_type"] = mime.from_file(str(self.path))
+
+            # Extension
+            ext = self.path.suffix.lower()
+
+            if ext in FILE_TYPES:
+                self.results["file_type"] = FILE_TYPES[ext]
+            else:
+                # Fallback to libmagic
+                m = magic.Magic(mime=False)
+                detected = m.from_file(str(self.path))
+                self.results["file_type"] = detected.split(",")[0].strip()
+
+        except Exception as e:
+            print(f"[ERROR] {e}")
+            self.results["file_type"] = "Unknown"
+
+        return self.results
+
+
+# Test
+kitty = KittyInvestigator(__file__)
+
+info = kitty.file_type()
+
+for key, value in info.items():
+    print(f"{key:<15}: {value}")
