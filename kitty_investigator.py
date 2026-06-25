@@ -107,14 +107,53 @@ class Kitty_investigator():
                 self.results["executable"] = True
                 bit_format = header[4]
                 self.results["architecture"] = "32-bit" if bit_format == 1 else "64-bit"
+# ;; DLL ;;
+          
+          elif self.path.suffix.lower() == ".dll":
+               if header[:2] == b"MZ":
+                  self.results["file_type"] = "Windows Dynamic Link Library (DLL)"
+                  self.results["executable"] = False
+         
+         
+# ;; zip ;; 
+          elif  header.startswith(b"PK\x03\x04"):
+               self.results["file_type"] = "ZIP Archive"
+               self.results["executable"] = False
 
-          return self.results
+# ;; 7-Zip ;;
+          elif header.startswith(b"7z\xBC\xAF\x27\x1C"):
+               self.results["file_type"] = "7z Archive"
+               self.results["executable"] = False
+
+# ;; RAR ;;
+          elif header.startswith(b"Rar!\x1A\x07\x00"):
+               self.results["file_type"] = "RAR Archive"
+               self.results["executable"] = False
+
+# ;; GZIP ;; 
+          elif header.startswith(b"\x1F\x8B\x08"):
+               self.results["file_type"] = "GZIP Archive (.gz)"
+               self.results["executable"] = False
+
+
+# ;; BZIP2 ;;
+          elif header.startswith(b"BZh"):
+               self.results["file_type"] = "BZIP2 Archive (.bz2)"
+               self.results["executable"] = False
+# ;; TAR ;;
+          elif self.path.suffix.lower() == ".tar":
+             with open(self.path, "rb") as f:
+                  data = f.read(512)
+                  if b"ustar" in data:
+                     self.results["file_type"] = "TAR Archive"
+                     self.results["executable"] = False    
+          return self.results 
 
 
 
 
 
-kitty = Kitty_investigator("moviebox-in-v-3.0.15.0513.03.apk")
+kitty = Kitty_investigator("64bit.7z")
 kitty.file_type()
 kitty = kitty.detect_binary()
 print(kitty)
