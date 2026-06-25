@@ -1,3 +1,4 @@
+from argparse import FileType
 import struct 
 from  pathlib import Path 
 import sys 
@@ -51,7 +52,38 @@ class Kitty_investigator():
     
         return self.results
 
+# : windows PE :
+      
+      def detect_binary(self):
+          with open(self.path,"rb") as file :
+               header = file.read(64)
 
-kitty = Kitty_investigator("req.py")
-kitty = kitty.file_type()
+          if header[:2] == b"MZ":
+             self.results["file_type"]  = "Windows PE" 
+             self.results["executable"] = True  
+             with open(self.path,"rb") as file:
+                 data = file.read()
+                 offset = struct.unpack("<I",data[0x3c:0x40])[0]
+                 if data[offset:offset+4] == b"PE\0\0":
+                     machine = struct.unpack("<H", data[offset+4:offset+6])[0]
+                     if machine == 0x14c:
+                        self.results["architecture"] = "32-bit (x86)"
+                     elif  machine == 0x8664:
+                         self.results["architecture"] = "64-bit (x64)"
+                     else:
+                         self.results["architecture"] = f"Unknown (machine={hex(machine)})"
+          else: 
+                 self.results["file_type"] = "Unknown"
+
+          return self.results
+      
+
+
+
+
+
+kitty = Kitty_investigator("08_prob.exe")
+kitty.file_type()
+kitty = kitty.detect_binary()
 print(kitty)
+
