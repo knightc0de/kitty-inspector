@@ -147,13 +147,33 @@ class Kitty_investigator():
                   if b"ustar" in data:
                      self.results["file_type"] = "TAR Archive"
                      self.results["executable"] = False    
-          return self.results 
 
+# ;; Text / Encoding Detection ;; 
+          if self.results["encoding"].startswith("Unknown"):
+             try:
+                 with open(self.path,"rb") as f:
+                     data = f.read(2048)   
+                 if all(32 <= b < 127 or b in (9,10,13) for b in data):
+                    self.results["encoding"]  = "ASCII"
+                 elif b'\x00' not in data:
+                     try:
+                         data.decode("utf-8")                      
+                         if self.results["file_type"] == "Unknown":
+                            self.results["file_type"] = "UTF-8 Text File"
+                         self.results["encoding"] = "UTF-8"
+                     except UnicodeDecodeError:
+                          pass 
+             except Exception:
+                 pass 
 
+# ;; Executable fallback ;; 
+          if any(word in self.results["file_type"].lower() for word in ["executable", "pe", "elf", "mach-o"]):
+             self.results["executable"] = True
+          
+          return self.results
+    
 
-
-
-kitty = Kitty_investigator("64bit.7z")
+kitty = Kitty_investigator()
 kitty.file_type()
 kitty = kitty.detect_binary()
 print(kitty)
