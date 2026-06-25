@@ -1,7 +1,7 @@
 from argparse import FileType
 import struct 
 from  pathlib import Path 
-import sys 
+import zipfile
 import re 
 
 results = { "file_type" : "Unknown",
@@ -86,16 +86,35 @@ class Kitty_investigator():
                 self.results["exceutable"]  = True 
                 self.results["architecture"] = "64-bit" if header[:4] in [b"\xFE\xED\xFA\xCF", b"\xCF\xFA\xED\xFE"] else "32-bit"
  
+        
+
+ # ;; Android APK  ;;
+          elif zipfile.is_zipfile(self.path):
+            try:
+                with zipfile.ZipFile(self.path, "r") as z:
+                    if "AndroidManifest.xml" in z.namelist():
+                        self.results["file_type"] = "Android APK"
+                        self.results["executable"] = False
+                        self.results["language"] = "Android Package"
+            except Exception:
+                pass
+
+           
+# ;; Linux Shared Object (.so) ;;
+          elif self.path.suffix.lower() == ".so": 
+             if header[:4] == b"\x7fELF":
+                self.results["file_type"] = "Linux Shared Object (.so)"
+                self.results["executable"] = True
+                bit_format = header[4]
+                self.results["architecture"] = "32-bit" if bit_format == 1 else "64-bit"
+
           return self.results
 
 
 
 
 
-
-
-
-kitty = Kitty_investigator()
+kitty = Kitty_investigator("moviebox-in-v-3.0.15.0513.03.apk")
 kitty.file_type()
 kitty = kitty.detect_binary()
 print(kitty)
