@@ -52,8 +52,7 @@ class Kitty_investigator():
     
         return self.results
 
-# : windows PE :
-      
+# ;; windows PE ;;     
       def detect_binary(self):
           with open(self.path,"rb") as file :
                header = file.read(64)
@@ -71,18 +70,32 @@ class Kitty_investigator():
                      elif  machine == 0x8664:
                          self.results["architecture"] = "64-bit (x64)"
                      else:
-                         self.results["architecture"] = f"Unknown (machine={hex(machine)})"
-          else: 
-                 self.results["file_type"] = "Unknown"
-
+                         self.results["architecture"] = f"Unknown (machine={hex(machine)})"      
+             
+ # ;; Linux ELF ;; 
+          elif   header[:4] == b"\x7fELF":
+                 self.results["file_type"]  = "Linux ElF Executable"
+                 self.results["executable"] = True 
+                 bit_format = header[4]
+                 self.results["architecture"] = "32-bit" if bit_format  == 1 else "64-bit"
+# ;; MacOS ;;  
+          elif  header[:4] in [
+                b"\xFE\xED\xFA\xCE" , b"\xCE\xFA\xED\xFE",
+                b"\xFE\xED\xFA\xCF" , b"\xCF\xFA\xED\xFE" ]:
+                self.results["file_type"] = "macOs Mach-O Exceutable"
+                self.results["exceutable"]  = True 
+                self.results["architecture"] = "64-bit" if header[:4] in [b"\xFE\xED\xFA\xCF", b"\xCF\xFA\xED\xFE"] else "32-bit"
+ 
           return self.results
-      
 
 
 
 
 
-kitty = Kitty_investigator("08_prob.exe")
+
+
+
+kitty = Kitty_investigator()
 kitty.file_type()
 kitty = kitty.detect_binary()
 print(kitty)
