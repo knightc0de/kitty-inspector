@@ -10,47 +10,62 @@ results = { "file_type" : "Unknown",
            "encoding"     :  "Unknown",
            "language"     : "Unknown",}
 
+FILE_TYPES = {
+    ".py": "Python Script",
+    ".c": "C Source File",
+    ".cpp": "C++ Source File",
+    ".cc": "C++ Source File",
+    ".cxx": "C++ Source File",
+    ".h": "C/C++ Header File",
+    ".hpp": "C++ Header File",
+    ".js": "JavaScript File",
+    ".ts": "TypeScript File",
+    ".java": "Java Source File",
+    ".php": "PHP Script",
+    ".html": "HTML Document",
+    ".htm": "HTML Document",
+    ".css": "CSS Stylesheet",
+    ".xml": "XML Document",
+    ".json": "JSON File",
+    ".yaml": "YAML File",
+    ".yml": "YAML File",
+    ".ini": "INI Configuration File",
+    ".cfg": "Configuration File",
+    ".conf": "Configuration File",
+    ".sh": "Shell Script",
+    ".bash": "Shell Script",
+    ".zsh": "Shell Script",
+    ".ps1": "PowerShell Script",
+    ".bat": "Batch Script",
+    ".cmd": "Command Script",
+    ".go": "Go Source File",
+    ".rs": "Rust Source File",
+    ".swift": "Swift Source File",
+    ".kt": "Kotlin Source File",
+    ".rb": "Ruby Script",
+    ".pl": "Perl Script",
+    ".lua": "Lua Script",
+    ".sql": "SQL Script",
+    ".md": "Markdown Document",
+    ".txt": "Text File",
+}
+
 class Kitty_investigator():
       def __init__(self,path):
             self.path = Path(path)
             self.results = results.copy()
     
       def file_type(self):
-        try:
-            ext = self.path.suffix.lower()
+         try:
+           ext = self.path.suffix.lower()
 
-            if ext == ".py":
-                self.results["file_type"] = "Python Script"
+           self.results["file_type"] = FILE_TYPES.get(ext,f"Unknown ({ext})" if ext else "Unknown")
 
-            elif ext == ".c":
-                self.results["file_type"] = "C Source File"
+         except Exception as e:
+             print(f"ERROR: {e}")
+             self.results["file_type"] = "Unknown"
 
-            elif ext in [".cpp", ".cc", ".cxx"]:
-                self.results["file_type"] = "C++ Source File"
-
-            elif ext in [".sh", ".bash", ".zsh"]:
-                self.results["file_type"] = "Shell Script"
-
-            elif ext in [".html", ".htm"]:
-                self.results["file_type"] = "HTML Document"
-
-            elif ext == ".php":
-                self.results["file_type"] = "PHP Script"
-
-            elif ext == ".js":
-                self.results["file_type"] = "JavaScript File"
-
-            elif ext == ".java":
-                self.results["file_type"] = "Java Source File"
-
-            else:
-                self.results["file_type"] = f"Unknown ({ext})"
-
-        except Exception as e:
-            print(f"ERROR: {e}")
-            self.results["file_type"] = "Unknown"
-    
-        return self.results
+         return self.results
 
 # ;; windows PE ;;     
       def detect_binary(self):
@@ -166,14 +181,14 @@ class Kitty_investigator():
              except Exception:
                  pass 
 
-# ;; Executable fallback ;; 
+# ;; Executable  ;; 
           if any(word in self.results["file_type"].lower() for word in ["executable", "pe", "elf", "mach-o"]):
              self.results["executable"] = True
           
           return self.results
     
 
-kitty = Kitty_investigator()
+kitty = Kitty_investigator("README.md")
 kitty.file_type()
 kitty = kitty.detect_binary()
 print(kitty)
