@@ -1,4 +1,5 @@
 from argparse import FileType
+import yaml 
 import struct 
 from  pathlib import Path 
 import zipfile
@@ -10,62 +11,33 @@ results = { "file_type" : "Unknown",
            "encoding"     :  "Unknown",
            "language"     : "Unknown",}
 
-FILE_TYPES = {
-    ".py": "Python Script",
-    ".c": "C Source File",
-    ".cpp": "C++ Source File",
-    ".cc": "C++ Source File",
-    ".cxx": "C++ Source File",
-    ".h": "C/C++ Header File",
-    ".hpp": "C++ Header File",
-    ".js": "JavaScript File",
-    ".ts": "TypeScript File",
-    ".java": "Java Source File",
-    ".php": "PHP Script",
-    ".html": "HTML Document",
-    ".htm": "HTML Document",
-    ".css": "CSS Stylesheet",
-    ".xml": "XML Document",
-    ".json": "JSON File",
-    ".yaml": "YAML File",
-    ".yml": "YAML File",
-    ".ini": "INI Configuration File",
-    ".cfg": "Configuration File",
-    ".conf": "Configuration File",
-    ".sh": "Shell Script",
-    ".bash": "Shell Script",
-    ".zsh": "Shell Script",
-    ".ps1": "PowerShell Script",
-    ".bat": "Batch Script",
-    ".cmd": "Command Script",
-    ".go": "Go Source File",
-    ".rs": "Rust Source File",
-    ".swift": "Swift Source File",
-    ".kt": "Kotlin Source File",
-    ".rb": "Ruby Script",
-    ".pl": "Perl Script",
-    ".lua": "Lua Script",
-    ".sql": "SQL Script",
-    ".md": "Markdown Document",
-    ".txt": "Text File",
-}
+
+with open("file_types.yaml", "r") as f:
+    FILE_TYPES = yaml.safe_load(f)
 
 class Kitty_investigator():
       def __init__(self,path):
             self.path = Path(path)
             self.results = results.copy()
     
+
+      
       def file_type(self):
-         try:
-           ext = self.path.suffix.lower()
+        try:
+            ext = self.path.suffix.lower()
 
-           self.results["file_type"] = FILE_TYPES.get(ext,f"Unknown ({ext})" if ext else "Unknown")
+            for category in FILE_TYPES.values():
+                if ext in category:
+                    self.results["file_type"] = category[ext]
+                    break
+            else:
+                self.results["file_type"] = f"Unknown ({ext})"
 
-         except Exception as e:
-             print(f"ERROR: {e}")
-             self.results["file_type"] = "Unknown"
+        except Exception as e:
+            print(f"ERROR: {e}")
+            self.results["file_type"] = "Unknown"
 
-         return self.results
+        return self.results
 
 # ;; windows PE ;;     
       def detect_binary(self):
@@ -161,14 +133,7 @@ class Kitty_investigator():
                   data = f.read(512)
                   if b"ustar" in data:
                      self.results["file_type"] = "TAR Archive"
-                     self.results["executable"] = False   
-
-
-
-
-
-                     
-                      
+                     self.results["executable"] = False  
 
 # ;; Text / Encoding Detection ;; 
           if self.results["encoding"].startswith("Unknown"):
@@ -259,7 +224,7 @@ def linking_and_stripped(path,data,ftype_):
         return linking,stripped
 
 
-kitty = Kitty_investigator("README.md")
+kitty = Kitty_investigator("urfile_.py")
 kitty.file_type()
 kitty = kitty.detect_binary()
 print(kitty)

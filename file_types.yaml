@@ -1,0 +1,37 @@
+source_code:
+  .py: Python Script
+  .c: C Source File
+  .cpp: C++ Source File
+  .cc: C++ Source File
+  .cxx: C++ Source File
+  .h: C Header File
+  .hpp: C++ Header File
+
+web:
+  .html: HTML Document
+  .htm: HTML Document
+  .css: CSS Stylesheet
+  .js: JavaScript File
+  .ts: TypeScript File
+  .php: PHP Script
+
+config:
+  .json: JSON File
+  .yaml: YAML File
+  .yml: YAML File
+  .ini: INI Configuration
+  .toml: TOML Configuration
+
+scripts:
+  .sh: Shell Script
+  .bash: Bash Script
+  .zsh: Z Shell Script
+  .ps1: PowerShell Script
+  .bat: Windows Batch Script
+
+archives:
+  .zip: ZIP Archive
+  .7z: 7-Zip Archive
+  .rar: RAR Archive
+  .tar: TAR Archive
+  .gz: GZIP Archive
