@@ -193,7 +193,71 @@ class Kitty_investigator():
              self.results["executable"] = True
           
           return self.results
-    
+      
+
+PACKER_SIGNATURES = { "UPX": [b"UPX0", b"UPX1", b"UPX2", b"UPX!"],
+    "Themida": [b"Themida", b"WIN32_Themida"],
+    "VMProtect": [b"VMProtect", b"VMProtectSDK"],
+    "ASPack": [b"ASPack", b"ASPACK"],
+    "MPRESS": [b"MPRESS"],
+    "PECompact": [b"PEC2", b"PECompact"],}
+
+pe_dllds = [b"KERNEL32", b"MSVCRT", b"WS2_32", b"ADVAPI32", b"USER32", b"GDI32"]
+elf_dynamic_ =  [b"DT_NEEDED", b"libc.so", b"ld-linux", b".so."]
+
+
+def read_packer(path):
+    with open(path,"rb") as file:
+        return file.read()
+
+def detect_packer_(data):
+    upper = data.upper()
+    for name,sings in PACKER_SIGNATURES.items():
+        for sig in sings:
+            if sig.upper() in upper:
+                return True,name 
+    if b"UPX" in upper:
+        return True,"UPX"
+    if b"PACKED" in upper:
+       return True,"Packed/Unkown"
+    return False,None
+
+def linking_and_stripped(path,data,ftype_):
+    linking = None
+    stripped = None
+    upper = data.upper()
+
+    if ftype_ and "PE" in ftype_.upper():
+        if any(dll in upper for dll in pe_dllds):
+            linking = "Dynamic"
+        else:
+            linking = "Static"
+        if b"RSDS" in data or b".PDB" in upper or b".DEBUG_" in upper:
+            stripped = "Non-Stripped"
+        else:
+            stripped = "Static"
+        if ftype_ and "ELF" in ftype_.upper():
+            if any(tok in upper for tok in elf_dynamic_):
+             linking = "Dynamic"
+            else: 
+                linking = "Static"  
+            if  b".debug_info" in data or b".symtab" in data or    b".debug_str" in data:
+                stripped = "Non-Stripped"
+            else:
+                stripped = "Stripped"
+        
+        else:
+            if any (dll in upper for dll in pe_dllds):
+                linking = "Dynamic"
+            else:
+                linking = "Unknown"
+            if any(sym in upper for sym in [b"RSDS", b".PDB",b".DEBUG_INFO",b".SYMTAB"]):
+                stripped = "Non-Stripped"
+            else:
+                stripped = "Unknown"
+
+        return linking,stripped
+
 
 kitty = Kitty_investigator("README.md")
 kitty.file_type()
