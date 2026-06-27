@@ -224,7 +224,7 @@ def linking_and_stripped(path,data,ftype_):
         return linking,stripped
 
 
-kitty = Kitty_investigator("urfile_.py")
+kitty = Kitty_investigator("")
 kitty.file_type()
 kitty = kitty.detect_binary()
 print(kitty)
