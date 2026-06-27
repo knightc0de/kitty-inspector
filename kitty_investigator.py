@@ -188,6 +188,19 @@ class Kitty_investigator():
           return self.results
     
 
+def detect_packer_(data):
+    upper = data.upper()
+    for name,sings in PACKER_SIGNATURES.items():
+        for sig in sings:
+            if sig.upper() in upper:
+                return True,name 
+    if b"UPX" in upper:
+        return True,"UPX"
+    if b"PACKED" in upper:
+       return True,"Packed/Unkown"
+    return False,None
+
+
 kitty = Kitty_investigator("README.md")
 kitty.file_type()
 kitty = kitty.detect_binary()
