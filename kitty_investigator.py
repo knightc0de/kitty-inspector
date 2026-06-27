@@ -161,7 +161,14 @@ class Kitty_investigator():
                   data = f.read(512)
                   if b"ustar" in data:
                      self.results["file_type"] = "TAR Archive"
-                     self.results["executable"] = False    
+                     self.results["executable"] = False   
+
+
+
+
+
+                     
+                      
 
 # ;; Text / Encoding Detection ;; 
           if self.results["encoding"].startswith("Unknown"):
