@@ -186,7 +186,22 @@ class Kitty_investigator():
              self.results["executable"] = True
           
           return self.results
-    
+      
+
+PACKER_SIGNATURES = { "UPX": [b"UPX0", b"UPX1", b"UPX2", b"UPX!"],
+    "Themida": [b"Themida", b"WIN32_Themida"],
+    "VMProtect": [b"VMProtect", b"VMProtectSDK"],
+    "ASPack": [b"ASPack", b"ASPACK"],
+    "MPRESS": [b"MPRESS"],
+    "PECompact": [b"PEC2", b"PECompact"],}
+
+pe_dllds = [b"KERNEL32", b"MSVCRT", b"WS2_32", b"ADVAPI32", b"USER32", b"GDI32"]
+elf_dynamic_ =  [b"DT_NEEDED", b"libc.so", b"ld-linux", b".so."]
+
+
+def read_packer(path):
+    with open(path,"rb") as file:
+        return file.read()
 
 def detect_packer_(data):
     upper = data.upper()
