@@ -21,6 +21,7 @@ config:
   .yml: YAML File
   .ini: INI Configuration
   .toml: TOML Configuration
+  .md : "Document TExt Format"
 
 scripts:
   .sh: Shell Script

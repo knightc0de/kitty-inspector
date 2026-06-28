@@ -1,7 +1,10 @@
 from argparse import FileType
-import yaml 
-import struct 
 from  pathlib import Path 
+from pygments.lexers import guess_lexer
+from pygments.util import ClassNotFound
+import filetype
+import yaml 
+import struct  
 import zipfile
 import re 
 
@@ -12,15 +15,13 @@ results = { "file_type" : "Unknown",
            "language"     : "Unknown",}
 
 
-with open("file_types.yaml", "r") as f:
-    FILE_TYPES = yaml.safe_load(f)
+with open("file_types.yaml", "r") as file:
+    FILE_TYPES = yaml.safe_load(file)
 
 class Kitty_investigator():
       def __init__(self,path):
             self.path = Path(path)
             self.results = results.copy()
-    
-
       
       def file_type(self):
         try:
@@ -29,9 +30,15 @@ class Kitty_investigator():
             for category in FILE_TYPES.values():
                 if ext in category:
                     self.results["file_type"] = category[ext]
-                    break
+                    return self.results 
+           
+            kind = filetype.guess(self.path)
+
+            if kind:
+               self.results["file_type"] = kind.extension.upper()
             else:
-                self.results["file_type"] = f"Unknown ({ext})"
+               self.results["file_type"] = f"Unknown ({ext})"
+          
 
         except Exception as e:
             print(f"ERROR: {e}")
@@ -153,13 +160,38 @@ class Kitty_investigator():
              except Exception:
                  pass 
 
+          p = Path(self.path)
+
+ #file content
+          try:
+            with open(p, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read(2048)
+                    if "def " in content and "import " in content:
+                        self.results["language"] = "Python"
+                    elif "#include" in content and "int main" in content:
+                        self.results["language"] = "C/C++"
+                    elif "function " in content and "console.log" in content:
+                        self.results["language"] = "JavaScript"
+                    elif "<?php" in content:
+                         self.results["language"] = "PHP"
+                    elif "class " in content and "public static void main" in content:
+                          self.results["language"] = "Java"  
+                    else:
+                            try:
+                                lexer = guess_lexer(content)
+                                self.results["language"] = lexer.name
+
+                            except ClassNotFound:
+                                self.results["language"] = "Unknown"  
+          except Exception:
+                 pass
+      
 # ;; Executable  ;; 
           if any(word in self.results["file_type"].lower() for word in ["executable", "pe", "elf", "mach-o"]):
              self.results["executable"] = True
           
           return self.results
       
-
 PACKER_SIGNATURES = { "UPX": [b"UPX0", b"UPX1", b"UPX2", b"UPX!"],
     "Themida": [b"Themida", b"WIN32_Themida"],
     "VMProtect": [b"VMProtect", b"VMProtectSDK"],
@@ -224,7 +256,7 @@ def linking_and_stripped(path,data,ftype_):
         return linking,stripped
 
 
-kitty = Kitty_investigator("")
+kitty = Kitty_investigator("README.md")
 kitty.file_type()
 kitty = kitty.detect_binary()
 print(kitty)
