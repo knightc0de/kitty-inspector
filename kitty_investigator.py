@@ -1,6 +1,10 @@
 from argparse import FileType
-import struct 
 from  pathlib import Path 
+from pygments.lexers import guess_lexer
+from pygments.util import ClassNotFound
+import filetype
+import yaml 
+import struct  
 import zipfile
 import re 
 
@@ -10,62 +14,37 @@ results = { "file_type" : "Unknown",
            "encoding"     :  "Unknown",
            "language"     : "Unknown",}
 
-FILE_TYPES = {
-    ".py": "Python Script",
-    ".c": "C Source File",
-    ".cpp": "C++ Source File",
-    ".cc": "C++ Source File",
-    ".cxx": "C++ Source File",
-    ".h": "C/C++ Header File",
-    ".hpp": "C++ Header File",
-    ".js": "JavaScript File",
-    ".ts": "TypeScript File",
-    ".java": "Java Source File",
-    ".php": "PHP Script",
-    ".html": "HTML Document",
-    ".htm": "HTML Document",
-    ".css": "CSS Stylesheet",
-    ".xml": "XML Document",
-    ".json": "JSON File",
-    ".yaml": "YAML File",
-    ".yml": "YAML File",
-    ".ini": "INI Configuration File",
-    ".cfg": "Configuration File",
-    ".conf": "Configuration File",
-    ".sh": "Shell Script",
-    ".bash": "Shell Script",
-    ".zsh": "Shell Script",
-    ".ps1": "PowerShell Script",
-    ".bat": "Batch Script",
-    ".cmd": "Command Script",
-    ".go": "Go Source File",
-    ".rs": "Rust Source File",
-    ".swift": "Swift Source File",
-    ".kt": "Kotlin Source File",
-    ".rb": "Ruby Script",
-    ".pl": "Perl Script",
-    ".lua": "Lua Script",
-    ".sql": "SQL Script",
-    ".md": "Markdown Document",
-    ".txt": "Text File",
-}
+
+with open("file_types.yaml", "r") as file:
+    FILE_TYPES = yaml.safe_load(file)
 
 class Kitty_investigator():
       def __init__(self,path):
             self.path = Path(path)
             self.results = results.copy()
-    
+      
       def file_type(self):
-         try:
-           ext = self.path.suffix.lower()
+        try:
+            ext = self.path.suffix.lower()
 
-           self.results["file_type"] = FILE_TYPES.get(ext,f"Unknown ({ext})" if ext else "Unknown")
+            for category in FILE_TYPES.values():
+                if ext in category:
+                    self.results["file_type"] = category[ext]
+                    return self.results 
+           
+            kind = filetype.guess(self.path)
 
-         except Exception as e:
-             print(f"ERROR: {e}")
-             self.results["file_type"] = "Unknown"
+            if kind:
+               self.results["file_type"] = kind.extension.upper()
+            else:
+               self.results["file_type"] = f"Unknown ({ext})"
+          
 
-         return self.results
+        except Exception as e:
+            print(f"ERROR: {e}")
+            self.results["file_type"] = "Unknown"
+
+        return self.results
 
 # ;; windows PE ;;     
       def detect_binary(self):
@@ -98,7 +77,7 @@ class Kitty_investigator():
                 b"\xFE\xED\xFA\xCE" , b"\xCE\xFA\xED\xFE",
                 b"\xFE\xED\xFA\xCF" , b"\xCF\xFA\xED\xFE" ]:
                 self.results["file_type"] = "macOs Mach-O Exceutable"
-                self.results["exceutable"]  = True 
+                self.results["executable"]  = True 
                 self.results["architecture"] = "64-bit" if header[:4] in [b"\xFE\xED\xFA\xCF", b"\xCF\xFA\xED\xFE"] else "32-bit"
  
         
@@ -161,7 +140,7 @@ class Kitty_investigator():
                   data = f.read(512)
                   if b"ustar" in data:
                      self.results["file_type"] = "TAR Archive"
-                     self.results["executable"] = False    
+                     self.results["executable"] = False  
 
 # ;; Text / Encoding Detection ;; 
           if self.results["encoding"].startswith("Unknown"):
@@ -183,29 +162,43 @@ class Kitty_investigator():
             
           p = Path(self.path)
 
-          # file content
-          try:
-               with open(p, "r", encoding="utf-8", errors="ignore") as f:
-                    content = f.read(2048)
-                    if "def " in content and "import " in content:
-                        self.results["language"] = "Python"
-                    elif "#include" in content and "int main" in content:
-                        self.results["language"] = "C/C++"
-                    elif "function " in content and "console.log" in content:
-                        self.results["language"] = "JavaScript"
-                    elif "<?php" in content:
-                         self.results["language"] = "PHP"
-                    elif "class " in content and "public static void main" in content:
-                         self.results["language"] = "Java"
-          except Exception:
-                 pass
+p = Path(self.path)
+
+# File content
+try:
+    with open(p, "r", encoding="utf-8", errors="ignore") as f:
+        content = f.read(2048)
+
+        if "def " in content and "import " in content:
+            self.results["language"] = "Python"
+
+        elif "#include" in content and "int main" in content:
+            self.results["language"] = "C/C++"
+
+        elif "function " in content and "console.log" in content:
+            self.results["language"] = "JavaScript"
+
+        elif "<?php" in content:
+            self.results["language"] = "PHP"
+
+        elif "class " in content and "public static void main" in content:
+            self.results["language"] = "Java"
+
+        else:
+            try:
+                lexer = guess_lexer(content)
+                self.results["language"] = lexer.name
+            except ClassNotFound:
+                self.results["language"] = "Unknown"
+
+except Exception:
+    pass
 # ;; Executable  ;; 
           if any(word in self.results["file_type"].lower() for word in ["executable", "pe", "elf", "mach-o"]):
              self.results["executable"] = True
           
           return self.results
       
-
 PACKER_SIGNATURES = { "UPX": [b"UPX0", b"UPX1", b"UPX2", b"UPX!"],
     "Themida": [b"Themida", b"WIN32_Themida"],
     "VMProtect": [b"VMProtect", b"VMProtectSDK"],
