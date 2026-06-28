@@ -162,41 +162,40 @@ class Kitty_investigator():
             
           p = Path(self.path)
 
-p = Path(self.path)
 
 # File content
-try:
-    with open(p, "r", encoding="utf-8", errors="ignore") as f:
-        content = f.read(2048)
+          try:
+                 with open(p, "r", encoding="utf-8", errors="ignore") as file:
+                      content = file.read(2048)
+ 
+                      if "def " in content and "import " in content:
+                          self.results["language"] = "Python"
 
-        if "def " in content and "import " in content:
-            self.results["language"] = "Python"
+                      elif "#include" in content and "int main" in content:
+                          self.results["language"] = "C/C++"
 
-        elif "#include" in content and "int main" in content:
-            self.results["language"] = "C/C++"
+                      elif "function " in content and "console.log" in content:
+                           self.results["language"] = "JavaScript"
 
-        elif "function " in content and "console.log" in content:
-            self.results["language"] = "JavaScript"
+                      elif "<?php" in content:
+                           self.results["language"] = "PHP"
 
-        elif "<?php" in content:
-            self.results["language"] = "PHP"
+                      elif "class " in content and "public static void main" in content:
+                           self.results["language"] = "Java"
 
-        elif "class " in content and "public static void main" in content:
-            self.results["language"] = "Java"
+                      else:
+                         try:
+                             lexer = guess_lexer(content)
+                             self.results["language"] = lexer.name
+                         except ClassNotFound:
+                             self.results["language"] = "Unknown"
 
-        else:
-            try:
-                lexer = guess_lexer(content)
-                self.results["language"] = lexer.name
-            except ClassNotFound:
-                self.results["language"] = "Unknown"
-
-except Exception:
-    pass
+          except Exception:
+                       pass
 # ;; Executable  ;; 
           if any(word in self.results["file_type"].lower() for word in ["executable", "pe", "elf", "mach-o"]):
              self.results["executable"] = True
-          
+           
           return self.results
       
 PACKER_SIGNATURES = { "UPX": [b"UPX0", b"UPX1", b"UPX2", b"UPX!"],
