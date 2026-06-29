@@ -263,7 +263,7 @@ def linking_and_stripped(path,data,ftype_):
         return linking,stripped
     
 
-def detect_protetcions(file,ftype_,_lief=True):
+def detect_protetcions(path,ftype,_lief=True):
     protections = {
         "pie" : False,
         "nx" : None,
@@ -279,7 +279,7 @@ def detect_protetcions(file,ftype_,_lief=True):
 #;; through leif parsing ;;
     if _lief:
          try:
-              binary = lief.parse(str(file))      
+              binary = lief.parse(str(path))      
               if binary:
                   ftype = binary.format.name
           
