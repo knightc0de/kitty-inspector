@@ -210,7 +210,7 @@ pe_dllds = [b"KERNEL32", b"MSVCRT", b"WS2_32", b"ADVAPI32", b"USER32", b"GDI32"]
 elf_dynamic_ =  [b"DT_NEEDED", b"libc.so", b"ld-linux", b".so."]
 
 
-def read_packer(path):
+def read_packer_bytes(path):
     with open(path,"rb") as file:
         return file.read()
 
@@ -263,7 +263,7 @@ def linking_and_stripped(path,data,ftype_):
         return linking,stripped
     
 
-def detect_protetcions(path,ftype,_lief=True):
+def detect_protections(path,ftype,_lief=True):
     protections = {
         "pie" : False,
         "nx" : None,
@@ -297,8 +297,45 @@ def detect_protetcions(path,ftype,_lief=True):
                      protections["stripped"] = "Non-Stripped" if symtab and len(binary.symbols) > 0 else "Stripped" 
                      protections["linking"] = "Dynamic" if binary.libraries else "Static" 
     
-         except:
-             pass
+                  elif ftype == "PE":
+                          dllchar = binary.optional_header.dll_characteristics_lists
+                          protections["pie"] = "DYNAMIC_BASE" in dllchar
+                          protections["aslr"] = protections["pie"]
+                          protections["nx"]  = "NX_COMPAT" in dllchar
+                          try:
+                              names = [imp.name for lib in binary.imports for  imp in lib.entries if imp.name]
+                          except Exception:
+                              names = [] 
+                          protections["canary"] = any("__security_cookie" in (n or "").lower() or "__stack_chk_fail" in (n or "").lower() for n in names)
+                          protections["linking"] = "Dynamic" if binary.imports else "Static"
+                          protections["stripped"] = "Non-Stripped" if getattr(binary, "has_debug", False) else "Stripped"   
+
+                  try:
+                            section_names = [sec.name.lower() for sec in binary.sections]
+                            if any("upx" in name for name in section_names):
+                               protections["packed"] = True
+                               protections["packer_name"] = "UPX"
+                  except Exception:
+                     pass           
+         except Exception as e :
+               protections["lief_error"] = str(e) 
+
+ # ;; RAw daTA  bytes analysis ;;           
+    try:
+          raw_bytes = read_packer_bytes(str(path))
+    except Exception:
+          raw_bytes = b""
+ 
+    upper = raw_bytes.upper()
+      
+    try:
+          is_packed,packer = detect_packer_(raw_bytes)
+          if is_packed:
+              protections["packed"] = True
+              protections["packer_name"] = packer
+    except Exception:
+          pass
+
 
 kitty = Kitty_investigator("README.md")
 kitty.file_type()
