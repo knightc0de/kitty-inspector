@@ -260,6 +260,21 @@ def linking_and_stripped(path,data,ftype_):
                 stripped = "Unknown"
 
         return linking,stripped
+    
+
+def detect_protetcions():
+    protections = {
+        "pie" : False,
+        "nx" : None,
+        "relro":None,
+        "canary": False,
+        "aslr": False,
+         "packed":False,
+         "stripped":None,
+         "linking":None}
+
+    pass
+
 
 
 kitty = Kitty_investigator("README.md")
