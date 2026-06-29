@@ -1,7 +1,8 @@
 from argparse import FileType
-from  pathlib import Path 
+from pathlib import Path 
 from pygments.lexers import guess_lexer
 from pygments.util import ClassNotFound
+import lief 
 import filetype
 import yaml 
 import struct  
@@ -262,7 +263,7 @@ def linking_and_stripped(path,data,ftype_):
         return linking,stripped
     
 
-def detect_protetcions():
+def detect_protetcions(file,ftype_,_lief=True):
     protections = {
         "pie" : False,
         "nx" : None,
@@ -273,9 +274,31 @@ def detect_protetcions():
          "stripped":None,
          "linking":None}
 
-    pass
+    raw_bytes = b""
 
-
+#;; through leif parsing ;;
+    if _lief:
+         try:
+              binary = lief.parse(str(file))      
+              if binary:
+                  ftype = binary.format.name
+          
+                  if ftype == "ELF":
+                     protections["pie"] = binary.is_pie
+                     protections["aslr"] = binary.is_pie
+                     protections["nx"] = binary.has_nx
+                     protections["canary"] = "__stack_chk_fail" in [s.name for s in binary.symbols]
+                     protections["relro"] = (
+                     "Full" if binary.has_full_relro else
+                     "Partial" if binary.has_partial_relro else
+                     "None"
+                      )
+                     symtab = binary.get_section(".symtab")
+                     protections["stripped"] = "Non-Stripped" if symtab and len(binary.symbols) > 0 else "Stripped" 
+                     protections["linking"] = "Dynamic" if binary.libraries else "Static" 
+    
+         except:
+             pass
 
 kitty = Kitty_investigator("README.md")
 kitty.file_type()
