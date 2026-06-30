@@ -1,4 +1,4 @@
-from argparse import FileType
+from argparse import  ArgumentParser
 from pathlib import Path 
 from pygments.lexers import guess_lexer
 from pygments.util import ClassNotFound
@@ -348,11 +348,16 @@ def detect_protections(path,ftype,_lief=True):
     return  protections 
  
  
+def main():
+    parser = ArgumentParser(description=" Curious cat File Security Method Analyzer")
+    pass
+ 
 
 
-
-kitty = Kitty_investigator("README.md")
+kitty = Kitty_investigator("08_prob.exe")
 kitty.file_type()
 kitty = kitty.detect_binary()
 print(kitty)
 
+pro = detect_protections("08_prob.exe",kitty.get("file_type"))
+print(pro)
