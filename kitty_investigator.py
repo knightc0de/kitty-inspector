@@ -376,4 +376,7 @@ def main():
         results["protections"] = protections 
 
 
-
+    if args.protections:
+     if not executable:
+            print(f"\n[-] File '{args.file}' is not an executable binary :")
+            return
