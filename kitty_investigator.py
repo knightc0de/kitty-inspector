@@ -16,7 +16,7 @@ results = { "file_type" : "Unknown",
            "language"     : "Unknown",}
 
 
-with open("file_types.yaml", "r") as file:
+with open("scripts/file_types.yaml", "r") as file:
     FILE_TYPES = yaml.safe_load(file)
 
 class Kitty_investigator():
