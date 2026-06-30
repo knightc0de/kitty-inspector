@@ -335,6 +335,20 @@ def detect_protections(path,ftype,_lief=True):
               protections["packer_name"] = packer
     except Exception:
           pass
+    
+    try:
+        if not protections.get("linking") or protections["linking"] == "Unknown":
+            linking,stripped = linking_and_stripped(path,raw_bytes,results.get("file_type"))
+            protections["linking"] = linking or protections.get("linking","Unknown")
+            protections["stripped"] = stripped or protections.get("stripped","Unknown")
+    except Exception:
+          protections["linking"] = "Unkown"
+          protections["stripped"] = "Unkown"
+      
+    return  protections 
+ 
+ 
+
 
 
 kitty = Kitty_investigator("README.md")
