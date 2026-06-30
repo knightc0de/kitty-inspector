@@ -380,3 +380,24 @@ def main():
      if not executable:
             print(f"\n[-] File '{args.file}' is not an executable binary :")
             return
+   
+     print(f"\n[+] Binary Protections: {args.file}")
+     labels = [
+           ("pie","PIE"),
+           ("nx", "NX"),
+           ("relro", "RELRO"),
+           ("canary", "Canary"),
+           ("aslr", "ASLR"),
+           ("packed", "Packed"),
+           ("stripped", "Stripped"),
+           ("linking", "Linking Type",)
+     ]
+     for key, label in labels:
+            val = protections.get(key)
+            if isinstance(val, bool):
+                val = "Yes" if val else "No"
+            elif val is None:
+                val = "Unknown"
+            print(f"  {label:<14}: {val}")
+     return
+    
