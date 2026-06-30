@@ -350,7 +350,11 @@ def detect_protections(path,ftype,_lief=True):
  
 def main():
     parser = ArgumentParser(description=" Curious cat File Security Method Analyzer")
-    pass
+    parser = ArgumentParser(description="File Analyzer")
+    parser.add_argument("file",type=Path,help="Path of your file ")
+    parser.add_argument("--protections",action="store_true",help="Show only binary protection information")
+    parser.add_argument("--no-lief" , action="store_true",help="skip LIEF parser (fast mode)")
+    args = parser.parse_args() 
  
 
 
