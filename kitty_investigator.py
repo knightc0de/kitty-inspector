@@ -7,7 +7,7 @@ import filetype
 import yaml 
 import struct  
 import zipfile
-import re 
+
 
 results = { "file_type" : "Unknown",
            "architecture" : "Unknown", 
@@ -356,12 +356,24 @@ def main():
     parser.add_argument("--no-lief" , action="store_true",help="skip LIEF parser (fast mode)")
     args = parser.parse_args() 
  
+    if not args.file.exists():
+       print(f"Error: File '{args.file}' not found.")
+       return
+    
 
 
-kitty = Kitty_investigator("08_prob.exe")
-kitty.file_type()
-kitty = kitty.detect_binary()
-print(kitty)
 
-pro = detect_protections("08_prob.exe",kitty.get("file_type"))
-print(pro)
+    kitty = Kitty_investigator("08_prob.exe") 
+    kitty.file_type()
+    kitty = kitty.detect_binary()
+    print(kitty)
+
+    executable = results.get("executable",False)
+    protections = None 
+    
+    if executable:
+        protections = detect_protections(str(args.file), results.get("file_type"), _lief=not args.no_lief)
+        results["protections"] = protections 
+
+
+
