@@ -406,3 +406,27 @@ def main():
      print(f"Encoding      : {results.get('encoding')}")
      print(f"Language      : {results.get('language')}\n")
 
+     
+     if executable and protections:
+       print("[+] Binary Protections\n")
+       for key, label in [
+           ("pie", "PIE"), ("nx", "NX"), ("relro", "RELRO"), ("canary", "Canary"),
+           ("aslr", "ASLR"), ("packed", "Packed"), ("packer_name", "Packer"),
+           ("stripped", "Stripped"), ("linking", "Linking Type")
+      ]:
+        val = protections.get(key)
+        if isinstance(val,bool):
+           val = "Yes" if val else "NO" 
+        elif val is None:
+             val = "Unknown"
+        print(f"  {label:<14}:{val}")  
+
+        if "lief_error" in protections:
+            print("\n[!] Note: LIEF parser failed while reading this binary.")
+            print(f"    Reason: {protections['lief_error']}")
+
+     else:
+        print("[-] File '{args.file}' is not an executable binary : ")       
+
+if __name__ == "__main__":
+   main()
