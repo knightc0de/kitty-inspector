@@ -359,9 +359,6 @@ def main():
     if not args.file.exists():
        print(f"Error: File '{args.file}' not found.")
        return
-    
-
-
 
     kitty = Kitty_investigator("08_prob.exe") 
     kitty.file_type()
@@ -401,3 +398,11 @@ def main():
             print(f"  {label:<14}: {val}")
      return
     
+
+     print(f"\n[+] File Report for: {args.file}\n")
+     print(f"File Type     : {results.get('file_type')}")
+     print(f"Architecture  : {results.get('architecture')}")
+     print(f"Executable    : {results.get('executable')}")
+     print(f"Encoding      : {results.get('encoding')}")
+     print(f"Language      : {results.get('language')}\n")
+
