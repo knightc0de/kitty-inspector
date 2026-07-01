@@ -167,10 +167,10 @@ class Kitty_investigator():
 # File content
           try:
 
-                if self.results["executable"]:
-                   self.results["language"] = "N/A"  
+               if self.results["file_type"] == "Android APK" or self.results["executable"]:
+                  self.results["language"] = "N/A"
 
-                else:  
+               else:  
                     with open(p, "r", encoding="utf-8", errors="ignore") as file:
                          content = file.read(2048)
  
