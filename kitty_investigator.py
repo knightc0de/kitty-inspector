@@ -166,25 +166,30 @@ class Kitty_investigator():
 
 # File content
           try:
-                 with open(p, "r", encoding="utf-8", errors="ignore") as file:
-                      content = file.read(2048)
+
+                if self.results["executable"]:
+                   self.results["language"] = "N/A"  
+
+                else:  
+                    with open(p, "r", encoding="utf-8", errors="ignore") as file:
+                         content = file.read(2048)
  
-                      if "def " in content and "import " in content:
+                    if "def " in content and "import " in content:
                           self.results["language"] = "Python"
 
-                      elif "#include" in content and "int main" in content:
+                    elif "#include" in content and "int main" in content:
                           self.results["language"] = "C/C++"
 
-                      elif "function " in content and "console.log" in content:
+                    elif "function " in content and "console.log" in content:
                            self.results["language"] = "JavaScript"
 
-                      elif "<?php" in content:
+                    elif "<?php" in content:
                            self.results["language"] = "PHP"
 
-                      elif "class " in content and "public static void main" in content:
+                    elif "class " in content and "public static void main" in content:
                            self.results["language"] = "Java"
 
-                      else:
+                    else:
                          try:
                              lexer = guess_lexer(content)
                              self.results["language"] = lexer.name
@@ -360,7 +365,7 @@ def main():
        print(f"Error: File '{args.file}' not found.")
        return
 
-    kitty = Kitty_investigator("args.file") 
+    kitty = Kitty_investigator(args.file) 
     kitty.file_type()
     results = kitty.detect_binary()
     print(results)
