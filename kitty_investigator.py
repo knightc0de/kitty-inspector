@@ -360,12 +360,12 @@ def main():
        print(f"Error: File '{args.file}' not found.")
        return
 
-    kitty = Kitty_investigator("08_prob.exe") 
+    kitty = Kitty_investigator("args.file") 
     kitty.file_type()
-    kitty = kitty.detect_binary()
-    print(kitty)
+    results = kitty.detect_binary()
+    print(results)
 
-    executable = results.get("executable",False)
+    executable = results["executable"]
     protections = None 
     
     if executable:
