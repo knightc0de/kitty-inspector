@@ -345,7 +345,7 @@ def detect_protections(path,ftype,_lief=True):
         if not protections.get("linking") or protections["linking"] == "Unknown":
             linking,stripped = linking_and_stripped(path,raw_bytes,results.get("file_type"))
             protections["linking"] = linking or protections.get("linking","Unknown")
-            protections["stripped"] = stripped or protections.get("stripped","Unknown")
+            protections["stripped"] = stripped or protections.get("stripped Binary","Unknown")
     except Exception:
           protections["linking"] = "Unkown"
           protections["stripped"] = "Unkown"
@@ -354,8 +354,8 @@ def detect_protections(path,ftype,_lief=True):
  
  
 def main():
-    parser = ArgumentParser(description=" Curious cat File Security Method Analyzer")
-    parser = ArgumentParser(description="File Analyzer")
+    parser = ArgumentParser(description=" Curious cat File and Security Analyzer")
+    parser = ArgumentParser(description="File and Security Analyzer")
     parser.add_argument("file",type=Path,help="Path of your file ")
     parser.add_argument("--protections",action="store_true",help="Show only binary protection information")
     parser.add_argument("--no-lief" , action="store_true",help="skip LIEF parser (fast mode)")
@@ -401,7 +401,7 @@ def main():
             elif val is None:
                 val = "Unknown"
             print(f"  {label:<14}: {val}")
-     return
+     
     
 
      print(f"\n[+] File Report for: {args.file}\n")
@@ -413,12 +413,6 @@ def main():
 
      
      if executable and protections:
-       print("[+] Binary Protections\n")
-       for key, label in [
-           ("pie", "PIE"), ("nx", "NX"), ("relro", "RELRO"), ("canary", "Canary"),
-           ("aslr", "ASLR"), ("packed", "Packed"), ("packer_name", "Packer"),
-           ("stripped", "Stripped"), ("linking", "Linking Type")
-      ]:
         val = protections.get(key)
         if isinstance(val,bool):
            val = "Yes" if val else "NO" 
