@@ -353,3 +353,8 @@ def detect_protections(path,ftype,_lief=True):
     return  protections 
  
  
+kitty = Kitty_investigator("08_prob.exe")
+kitty.file_type()
+results = kitty.detect_binary()
+print(results)
+
