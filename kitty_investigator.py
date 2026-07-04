@@ -353,8 +353,14 @@ def detect_protections(path,ftype,_lief=True):
     return  protections 
  
  
-kitty = Kitty_investigator("08_prob.exe")
-kitty.file_type()
-results = kitty.detect_binary()
-print(results)
+ 
+ 
+def main():
+    
+    parser = ArgumentParser(description=" A curis cat  Security and file Analyzer ")
+    parser.add_argument("file",type=Path,help="Path of your file ")
+    parser.add_argument("--protections",action="store_true",help="Show only binary protection information")
+    parser.add_argument("--no-lief" , action="store_true",help="skip LIEF parser (fast mode)")
+    args = parser.parse_args() 
+    pass
 
