@@ -364,3 +364,6 @@ def main():
     args = parser.parse_args() 
     pass
 
+    if not args.file.exists():
+      print(f"Error: File '{args.file}' not found.")
+      return
