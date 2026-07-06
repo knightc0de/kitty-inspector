@@ -112,7 +112,7 @@ class Kitty_investigator():
                   self.results["executable"] = False
          
          
-# ;; zip ;; 
+
           elif  header.startswith(b"PK\x03\x04"):
                self.results["file_type"] = "ZIP Archive"
                self.results["executable"] = False
