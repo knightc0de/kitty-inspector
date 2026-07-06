@@ -1,3 +1,4 @@
+import time 
 def print_report(file_name, results, protections):
     print(r"""
 ╔══════════════════════════════════════════════════════════════╗
@@ -9,6 +10,9 @@ def print_report(file_name, results, protections):
     print("🐾 Target")
     print("─" * 62)
     print(f"File          : {file_name}")
+
+    print("Analyzing....")
+    time.sleep(1.45)
 
     
     print("\n File_info ")
@@ -31,7 +35,7 @@ def print_report(file_name, results, protections):
     else:
         print("Not an executable binary.")
      
-    print("\n Binary Analysis")
+    print("\n🔍 Binary Analysis")
     print("─" * 62)
     if results["executable"]: 
      print(f"Packed        : {protections.get('packed')}")
@@ -72,7 +76,7 @@ def verdict(score):
         print("🙀 Dangerous! Kitty refuses to touch it.")
 
 def calculate_score(protections):
-
+     
     score = 100
 
     if not protections.get("nx"):
