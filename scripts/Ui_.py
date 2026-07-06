@@ -38,7 +38,7 @@ def print_report(file_name, results, protections):
 r"""
 [bold cyan]
 ╔══════════════════════════════════════════════════════════════╗
-║                  🐱 KITTY INSPECTOR                          ║
+║                  🐱 KITTY INSPECTOR                         ║
 ║             Curious Cats File Threats  Analyzer              ║
 ╚══════════════════════════════════════════════════════════════╝
 [/]
