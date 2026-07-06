@@ -2,6 +2,8 @@ from argparse import  ArgumentParser
 from pathlib import Path 
 from pygments.lexers import guess_lexer
 from pygments.util import ClassNotFound
+from scripts.Ui_ import print_report, kitty_meter, verdict,calculate_score
+import json
 import lief 
 import filetype
 import yaml 
@@ -454,28 +456,45 @@ def detect_protections(path, ftype=None, _lief=True):
         pass
 
     return protections
- 
- 
-kitty = Kitty_investigator("main")
-kitty.file_type
-results = kitty.detect_binary()
-print(results)
-
-pro = detect_protections("main",results["file_type"])
-print(pro)
 
 
-
-
- 
-#def main():
-   #  parser = ArgumentParser(description="Curious Cat  file and Security Analyzer ")
-    # parser.add_argument("file",type=Path,help="Path of your file ")
-     #parser.add_argument("--protections",action="store_true",help="Show only binary protection information")
-     #args = parser.parse_args() 
+def main():
+     parser = ArgumentParser(prog="Kitty_inspector",description="Curious Cat  File  Security Analyzer ")
+     parser.add_argument("file",type=Path,help="Target File path")
+     parser.add_argument("-j","--json",metavar="OUTPUT",help="Save analysis report as a JSON file")
+     args = parser.parse_args() 
     
-   # if not args.file.exists():
-    #  print(f"Error: File '{args.file}' not found.")
-     # return
-     # pass
+     if not args.file.exists():
+        parser.error(f"File '{args.file}' not found.")
+     
+     kitty = Kitty_investigator(args.file)
+     kitty.file_type()
+     results = kitty.detect_binary()
+  
+     protection = detect_protections(args.file,results["file_type"])
+     score = calculate_score(protection)
+
+     print_report(args.file.name, results, protection)
+     kitty_meter(score)
+     verdict(score)
+     if args.json:
+
+        report = {
+            "file": str(args.file),
+            "information": results,
+            "protections": protection,
+            "score": score
+        }
+
+        with open(args.json, "w", encoding="utf-8") as f:
+            json.dump(report, f, indent=4)
+
+        print(f"JSON report saved to '{args.json}'")
+        return
+     
+    
+
+if __name__ == "__main__":
+    main()
+
 
