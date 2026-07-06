@@ -270,7 +270,7 @@ This project is licensed under the MIT License.
 
 **Puneet Singh**
 
-Cybersecurity Enthusiast • Progarmmer • Reverse Engineering Learner
+Cybersecurity Enthusiast • Programmer • Reverse Engineering Learner
 
 GitHub: https://github.com/knightc0de
 
