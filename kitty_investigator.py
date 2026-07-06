@@ -268,102 +268,214 @@ def linking_and_stripped(path,data,ftype_):
         return linking,stripped
     
 
-def detect_protections(path,ftype,_lief=True):
+def detect_protections(path, ftype=None, _lief=True):
+
     protections = {
-        "pie" : False,
-        "nx" : None,
-        "relro":None,
+        "pie": False,
+        "nx": None,
+        "relro": "Unknown",
         "canary": False,
         "aslr": False,
-         "packed":False,
-         "stripped":None,
-         "linking":None}
+        "packed": False,
+        "packer_name": None,
+        "stripped": "Unknown",
+        "linking": "Unknown",
+    }
 
     raw_bytes = b""
-
-#;; through leif parsing ;;
+ 
+ # ;; _lief  parsing ;; 
+ 
     if _lief:
-         try:
-              binary = lief.parse(str(path))      
-              if binary:
-                  ftype = binary.format.name
-          
-                  if ftype == "ELF":
-                     protections["pie"] = binary.is_pie
-                     protections["aslr"] = binary.is_pie
-                     protections["nx"] = binary.has_nx
-                     protections["canary"] = "__stack_chk_fail" in [s.name for s in binary.symbols]
-                     protections["relro"] = (
-                     "Full" if binary.has_full_relro else
-                     "Partial" if binary.has_partial_relro else
-                     "None"
-                      )
-                     symtab = binary.get_section(".symtab")
-                     protections["stripped"] = "Non-Stripped" if symtab and len(binary.symbols) > 0 else "Stripped" 
-                     protections["linking"] = "Dynamic" if binary.libraries else "Static" 
-    
-                  elif ftype == "PE":
-                          dllchar = binary.optional_header.dll_characteristics_lists
-                          protections["pie"] = "DYNAMIC_BASE" in dllchar
-                          protections["aslr"] = protections["pie"]
-                          protections["nx"]  = "NX_COMPAT" in dllchar
-                          try:
-                              names = [imp.name for lib in binary.imports for  imp in lib.entries if imp.name]
-                          except Exception:
-                              names = [] 
-                          protections["canary"] = any("__security_cookie" in (n or "").lower() or "__stack_chk_fail" in (n or "").lower() for n in names)
-                          protections["linking"] = "Dynamic" if binary.imports else "Static"
-                          protections["stripped"] = "Non-Stripped" if getattr(binary, "has_debug", False) else "Stripped"   
+        try:
+            binary = lief.parse(str(path))
 
-                  try:
-                            section_names = [sec.name.lower() for sec in binary.sections]
-                            if any("upx" in name for name in section_names):
-                               protections["packed"] = True
-                               protections["packer_name"] = "UPX"
-                  except Exception:
-                     pass           
-         except Exception as e :
-               protections["lief_error"] = str(e) 
+            if binary:
 
- # ;; RAw daTA  bytes analysis ;;           
-    try:
-          raw_bytes = read_packer_bytes(str(path))
-    except Exception:
-          raw_bytes = b""
- 
-    upper = raw_bytes.upper()
-      
-    try:
-          is_packed,packer = detect_packer_(raw_bytes)
-          if is_packed:
-              protections["packed"] = True
-              protections["packer_name"] = packer
-    except Exception:
-          pass
-    
-    try:
-        if not protections.get("linking") or protections["linking"] == "Unknown":
-            linking,stripped = linking_and_stripped(path,raw_bytes,results.get("file_type"))
-            protections["linking"] = linking or protections.get("linking","Unknown")
-            protections["stripped"] = stripped or protections.get("stripped Binary","Unknown")
-    except Exception:
-          protections["linking"] = "Unkown"
-          protections["stripped"] = "Unkown"
-      
-    return  protections 
- 
- 
- 
- 
-def main():
-    
-    parser = ArgumentParser(description=" A curis cat  Security and file Analyzer ")
-    parser.add_argument("file",type=Path,help="Path of your file ")
-    parser.add_argument("--protections",action="store_true",help="Show only binary protection information")
-    parser.add_argument("--no-lief" , action="store_true",help="skip LIEF parser (fast mode)")
-    args = parser.parse_args() 
-    pass
+                f_t = binary.format.name
 
-    if not args.file.exists():
-      print(f"Error: File '{args.file}' not found.")
-      return
+                
+
+                if f_t == "ELF":
+
+                    protections["pie"] = getattr(binary, "is_pie", False)
+                    protections["aslr"] = protections["pie"]
+                    protections["nx"] = getattr(binary, "has_nx", None)
+
+# ;; Canary & RELRO ;;
+                    try:
+                        protections["canary"] = any(
+                            s.name == "__stack_chk_fail"
+                            for s in binary.symbols
+                        )
+                    except Exception:
+                        pass                 
+
+                    if hasattr(binary, "has_full_relro"):
+
+                        if binary.has_full_relro:
+                            protections["relro"] = "Full"
+
+                        elif getattr(binary, "has_partial_relro", False):
+                            protections["relro"] = "Partial"
+
+                        else:
+                            protections["relro"] = "None"
+
+                    elif hasattr(binary, "has_gnu_relro"):
+
+                        if binary.has_gnu_relro:
+                            protections["relro"] = "Partial"
+                        else:
+                            protections["relro"] = "None"
+
+# ;; Linking & Stripped ;;
+
+                    try:
+                        protections["linking"] = (
+                            "Dynamic"
+                            if len(binary.libraries) > 0
+                            else "Static"
+                        )
+                    except Exception:
+                        pass            
+
+                    try:
+                        symtab = binary.get_section(".symtab")
+
+                        if symtab and len(binary.symbols) > 0:
+                            protections["stripped"] = "Non-Stripped"
+                        else:
+                            protections["stripped"] = "Stripped"
+
+                    except Exception:
+                        pass
+
+                
+
+                elif f_t == "PE":
+
+                    dllchar = binary.optional_header.dll_characteristics_lists
+
+                    protections["pie"] = (
+                        "DYNAMIC_BASE" in dllchar
+                    )
+
+                    protections["aslr"] = protections["pie"]
+
+                    protections["nx"] = (
+                        "NX_COMPAT" in dllchar
+                    )
+
+                    try:
+                        names = [
+                            imp.name
+                            for lib in binary.imports
+                            for imp in lib.entries
+                            if imp.name
+                        ]
+                    except Exception:
+                        names = []
+
+                    protections["canary"] = any(
+                        "__security_cookie" in (n or "").lower()
+                        or "__stack_chk_fail" in (n or "").lower()
+                        for n in names
+                    )
+
+                    protections["linking"] = (
+                        "Dynamic"
+                        if binary.imports
+                        else "Static"
+                    )
+
+                    protections["stripped"] = (
+                        "Non-Stripped"
+                        if getattr(binary, "has_debug", False)
+                        else "Stripped"
+                    )
+
+                
+
+                try:
+                    section_names = [
+                        sec.name.lower()
+                        for sec in binary.sections
+                    ]
+
+                    if any("upx" in s for s in section_names):
+                        protections["packed"] = True
+                        protections["packer_name"] = "UPX"
+
+                except Exception:
+                    pass
+
+        except Exception as e:
+            protections["lief_error"] = str(e)
+
+# ;; RAw byte analysis ;;
+
+    try:
+        raw_bytes = read_packer_bytes(str(path))
+    except Exception:
+        raw_bytes = b""
+
+ # ;; packer ;;
+
+    try:
+        packed, packer = detect_packer_(raw_bytes)
+
+        if packed:
+            protections["packed"] = True
+            protections["packer_name"] = packer
+
+    except Exception:
+        pass
+
+
+    try:
+
+        if protections["linking"] == "Unknown" or \
+           protections["stripped"] == "Unknown":
+
+            link, strip = linking_and_stripped(
+                path,
+                raw_bytes,
+                ftype
+            )
+
+            if protections["linking"] == "Unknown":
+                protections["linking"] = link
+
+            if protections["stripped"] == "Unknown":
+                protections["stripped"] = strip
+
+    except Exception:
+        pass
+
+    return protections
+ 
+ 
+kitty = Kitty_investigator("main")
+kitty.file_type
+results = kitty.detect_binary()
+print(results)
+
+pro = detect_protections("main",results["file_type"])
+print(pro)
+
+
+
+
+ 
+#def main():
+   #  parser = ArgumentParser(description="Curious Cat  file and Security Analyzer ")
+    # parser.add_argument("file",type=Path,help="Path of your file ")
+     #parser.add_argument("--protections",action="store_true",help="Show only binary protection information")
+     #args = parser.parse_args() 
+    
+   # if not args.file.exists():
+    #  print(f"Error: File '{args.file}' not found.")
+     # return
+     # pass
+
