@@ -475,8 +475,13 @@ def main():
      score = calculate_score(protection)
 
      print_report(args.file.name, results, protection)
-     kitty_meter(score)
-     verdict(score)
+     if results["executable"]:
+        kitty_meter(score)
+        verdict(score)
+     else:
+        print("\n Security protection analysis is not applicable.")
+
+
      if args.json:
 
         report = {
