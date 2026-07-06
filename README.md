@@ -1,6 +1,7 @@
 # 🐱 Kitty Inspector
-![]
+![](/scripts/img0.png)
 
+# About
 
 > **Curious Cats Catch Hidden Threats**
 
