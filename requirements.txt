@@ -1,0 +1,6 @@
+lief>=0.16.0
+rich>=14.0.0
+PyYAML>=6.0
+filetype>=1.2.0
+Pygments>=2.19.0
+colorama>=0.4.6
