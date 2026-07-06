@@ -2,7 +2,7 @@ from argparse import  ArgumentParser
 from pathlib import Path 
 from pygments.lexers import guess_lexer
 from pygments.util import ClassNotFound
-from scripts.Ui_ import print_report, kitty_meter, verdict,calculate_score
+from  scripts.Ui_ import print_report, kitty_meter, verdict,calculate_score
 import json
 import lief 
 import filetype
