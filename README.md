@@ -231,13 +231,6 @@ Analyze any file:
 python kitty_investigator.py sample.exe
 ```
 
-Show protection analysis only:
-
-```bash
-python kitty_investigator.py sample.exe 
-```
-
-
 Analyze non-executable files:
 
 ```bash
