@@ -265,8 +265,6 @@ This project is licensed under the MIT License.
 
 Cybersecurity Enthusiast • Programmer • Reverse Engineering Learner
 
-GitHub: https://github.com/knightc0de
-
 ---
 
 ## ⭐ Support
