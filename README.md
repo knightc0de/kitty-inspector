@@ -1,4 +1,4 @@
-# 🐱 Kitty Inspector
+#  Kitty Inspector
 ![](/scripts/img0.png)
 
 # About
