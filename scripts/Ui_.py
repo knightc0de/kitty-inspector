@@ -38,7 +38,7 @@ def print_report(file_name, results, protections):
 r"""
 [bold cyan]
 ╔══════════════════════════════════════════════════════════════╗
-║                  🐱 KITTY INSPECTOR                         ║
+║                    KITTY INSPECTOR                         ║
 ║             Curious Cats File Threats  Analyzer              ║
 ╚══════════════════════════════════════════════════════════════╝
 [/]
@@ -83,7 +83,7 @@ r"""
 
     console.print()
 
-    console.print("[bold magenta]🛡 Security Protections[/]")
+    console.print("[bold magenta]  Security Protections[/]")
     console.print("[cyan]" + "─" * 62)
 
     if results["executable"]:
@@ -100,7 +100,7 @@ r"""
 
     console.print()
 
-    console.print("[bold magenta]🔍 Binary Analysis[/]")
+    console.print("[bold magenta]  Binary Analysis[/]")
     console.print("[cyan]" + "─" * 62)
 
     if results["executable"]:
