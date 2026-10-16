@@ -240,7 +240,7 @@ python kitty_investigator.py README.md
 ---
 
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome.
 
@@ -253,7 +253,7 @@ If you have ideas, improvements, or bug fixes:
 
 ---
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License.
 
@@ -267,9 +267,9 @@ Cybersecurity Enthusiast • Programmer • Reverse Engineering Learner
 
 ---
 
-## ⭐ Support
+## Support
 
-If you found Kitty Inspector useful, consider giving the repository a ⭐ on GitHub. It helps the project reach more developers and security enthusiasts.
+If you found Kitty Inspector useful, consider giving the repository a star  on GitHub. It helps the project reach more developers and security enthusiasts.
 
 ---
 
